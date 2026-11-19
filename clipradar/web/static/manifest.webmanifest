@@ -1,0 +1,11 @@
+{
+  "name": "ClipRadar",
+  "short_name": "ClipRadar",
+  "description": "Paste a video link, get the best moments as HD shorts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F1E6",
+  "theme_color": "#E0301E",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }],
+  "share_target": { "action": "/", "method": "GET", "params": { "url": "url", "text": "text" } }
+}

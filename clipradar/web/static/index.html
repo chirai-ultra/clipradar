@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#E0301E">
+<title>ClipRadar: best moments, in HD</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg">
+<style>
+@font-face{font-family:"CR Black";src:url(/font.otf) format("opentype");font-weight:900;font-display:swap}
+:root{
+  --ink:#151E11; --paper:#F4F1E6; --red:#E0301E; --yellow:#F7D51B; --green:#3B6E2C;
+  --blue:#3E6DB0; --sky:#75A9CF; --orange:#E8912C; --white:#fff;
+  --r:14px; --b:3px solid var(--ink);
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+html,body{margin:0;color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+.paint{position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%}
+main{position:relative;z-index:1}
+main{max-width:1060px;margin:0 auto;padding:clamp(16px,4vw,40px) clamp(14px,4vw,32px) 80px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+h1{font-family:"CR Black",system-ui,sans-serif;font-weight:900;font-size:clamp(52px,12vw,112px);letter-spacing:-.045em;line-height:.86;margin:0}
+h1 span{display:inline-block;background:var(--ink);color:var(--paper);padding:0 .12em;transform:rotate(-2deg);margin-left:.04em}
+.tag{font-weight:700;max-width:330px;background:var(--white);border:var(--b);border-radius:var(--r);padding:10px 14px;box-shadow:5px 5px 0 var(--ink)}
+.tag b{color:var(--red)}
+.card{background:var(--white);border:var(--b);border-radius:var(--r);box-shadow:7px 7px 0 var(--ink);padding:clamp(16px,3vw,26px);margin-bottom:22px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+input[type=url],input[type=text],select{font:inherit;border:var(--b);border-radius:10px;padding:13px 14px;background:var(--paper);color:var(--ink);min-width:0}
+input[type=url]{flex:1 1 320px;font-size:17px;font-weight:600}
+input:focus,select:focus,button:focus-visible{outline:4px solid var(--yellow);outline-offset:2px}
+button,.btn{font:inherit;font-weight:800;border:var(--b);border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .08s,box-shadow .08s}
+button:active,.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+button.go{background:var(--red);color:var(--white);font-size:18px;padding:13px 24px}
+button.blue,.btn.blue{background:var(--blue);color:var(--white)}
+button.green,.btn.green{background:var(--green);color:var(--white)}
+button.ghost{background:var(--paper)}
+button[disabled]{opacity:.55;cursor:wait}
+.lbl{font-weight:900;text-transform:uppercase;letter-spacing:.06em;font-size:12.5px;margin:18px 0 8px}
+.count{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.count button{padding:10px 0;justify-content:center;background:var(--paper);box-shadow:2px 2px 0 var(--ink)}
+.count button.on{background:var(--ink);color:var(--yellow)}
+.count button:nth-child(4n+1).on{background:var(--red);color:#fff}
+.count button:nth-child(4n+2).on{background:var(--yellow);color:var(--ink)}
+.count button:nth-child(4n+3).on{background:var(--green);color:#fff}
+.count button:nth-child(4n+4).on{background:var(--blue);color:#fff}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.opts label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:700;margin-top:14px;flex-wrap:wrap}
+.toggle input{width:22px;height:22px;accent-color:var(--red)}
+.or{display:flex;align-items:center;gap:10px;margin:14px 0 0;font-weight:700;font-size:14px;flex-wrap:wrap}
+.or label.btn{background:var(--sky)}
+.or input{display:none}
+.progress{display:none}
+.bar{height:22px;border:var(--b);border-radius:999px;overflow:hidden;background:var(--paper)}
+.bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(-45deg,var(--red) 0 16px,var(--orange) 16px 32px);transition:width .5s}
+.stages{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.stages span{font-size:12.5px;font-weight:800;border:2px solid var(--ink);border-radius:999px;padding:3px 10px;background:var(--paper);opacity:.45}
+.stages span.done{opacity:1;background:var(--green);color:#fff}
+.stages span.now{opacity:1;background:var(--yellow)}
+#msg{font-weight:700;margin-top:10px}
+.err{background:var(--red);color:#fff;border:var(--b);border-radius:10px;padding:12px 14px;font-weight:700;margin-top:12px;display:none}
+.results{display:none}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.rhead h2{overflow-wrap:anywhere;font-family:"CR Black",system-ui;font-size:clamp(26px,5vw,40px);margin:0;letter-spacing:-.03em}
+.meta{font-weight:700;font-size:14px}
+canvas{width:100%;height:90px;border:var(--b);border-radius:10px;background:var(--paper);margin:6px 0 18px;display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.clip{border:var(--b);border-radius:var(--r);overflow:hidden;background:var(--white);box-shadow:5px 5px 0 var(--ink);display:flex;flex-direction:column}
+.clip video{width:100%;aspect-ratio:9/16;background:var(--ink);display:block;object-fit:contain}
+.clip.land video{aspect-ratio:16/9}.clip.sq video{aspect-ratio:1}
+.clip .top{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:var(--b);font-weight:900}
+.clip:nth-child(4n+1) .top{background:var(--red);color:#fff}
+.clip:nth-child(4n+2) .top{background:var(--yellow)}
+.clip:nth-child(4n+3) .top{background:var(--green);color:#fff}
+.clip:nth-child(4n+4) .top{background:var(--blue);color:#fff}
+.clip .body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.clip .t{font-weight:800;line-height:1.25}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips span{font-size:11.5px;font-weight:800;border:2px solid var(--ink);border-radius:999px;padding:1px 8px;background:var(--paper)}
+.clip .acts{display:flex;gap:8px;margin-top:auto}
+.clip .acts>*{flex:1;justify-content:center;padding:9px 6px;font-size:14px}
+.phone{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.phone .qr{width:128px;height:128px;border:var(--b);border-radius:10px;background:#fff;padding:6px}
+.phone .qr svg{width:100%;height:100%}
+footer{font-size:13px;font-weight:600;opacity:.8;text-align:center;margin-top:30px}
+footer a{color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--yellow);font-weight:800;padding:12px 18px;border-radius:10px;transition:transform .25s,opacity .25s;z-index:9;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media (max-width:560px){.count{grid-template-columns:repeat(5,1fr)}button.go{width:100%;justify-content:center}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<!-- Painted backdrop: flat colour fields roughened with a turbulence filter so edges read like palette-knife strokes -->
+<svg class="paint" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <filter id="knife" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency=".018 .045" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="70" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+  </defs>
+  <g filter="url(#knife)" opacity=".9">
+    <path d="M-60-60H330L250 260 120 520-60 600Z" fill="#E0301E"/>
+    <path d="M560-60H1060V280L860 330 700 180Z" fill="#3B6E2C"/>
+    <path d="M1060 330V720L880 640 780 470 900 360Z" fill="#3E6DB0"/>
+    <path d="M-60 760 160 690 380 820 300 1060H-60Z" fill="#F7D51B"/>
+    <path d="M650 900 820 780 1060 820V1060H600Z" fill="#E8912C"/>
+    <path d="M140 860 260 800 340 900 220 960Z" fill="#75A9CF"/>
+  </g>
+  <rect width="1000" height="1000" filter="url(#grain)"/>
+</svg>
+
+<main>
+  <header>
+    <h1>Clip<span>Radar</span></h1>
+    <div class="tag">Paste any video. Get the <b>best moments</b> as HD shorts, ready to post.</div>
+  </header>
+
+  <section class="card" id="form">
+    <form id="f" class="row" autocomplete="off">
+      <input type="url" id="src" placeholder="Paste a link: YouTube, Twitch, Kick, X, TikTok…" required>
+      <button class="go" id="go" type="submit">Find moments ▸</button>
+    </form>
+    <div class="or">or <label class="btn" for="file">⬆ Upload a video</label><input type="file" id="file" accept="video/*"><span id="fname"></span></div>
+
+    <div class="lbl">How many clips? <span id="nlbl">5</span></div>
+    <div class="count" id="count"></div>
+
+    <div class="lbl">Options</div>
+    <div class="opts">
+      <label>Video type
+        <select id="content"><option value="auto">Auto-detect</option><option value="gaming">Gameplay</option><option value="talk">Podcast / talking</option><option value="sports">Sports</option></select></label>
+      <label>Format
+        <select id="layout"><option value="vertical">Vertical 9:16 (Reels, Shorts, TikTok)</option><option value="square">Square 1:1</option><option value="landscape">Landscape 16:9</option><option value="auto">Keep original shape</option></select></label>
+      <label>Framing
+        <select id="framing"><option value="auto">Auto</option><option value="smart">Follow faces / action</option><option value="fit">Fit + blurred background</option><option value="center">Centre crop</option></select></label>
+      <label>Keywords to favour
+        <input type="text" id="kw" placeholder="e.g. clutch, goal, funny"></label>
+    </div>
+    <div class="toggle">
+      <label><input type="checkbox" id="cap" checked> Animated captions</label>
+      <label><input type="checkbox" id="hook" checked> Hook title</label>
+      <label><input type="checkbox" id="best"> Best quality (slower)</label>
+    </div>
+  </section>
+
+  <section class="card progress" id="prog">
+    <div class="bar"><i id="barfill"></i></div>
+    <div class="stages" id="stages"></div>
+    <div id="msg">Starting…</div>
+    <div class="err" id="err"></div>
+  </section>
+
+  <section class="card results" id="res">
+    <div class="rhead">
+      <div><h2 id="rtitle">Your clips</h2><div class="meta" id="rmeta"></div></div>
+      <div class="row"><a class="btn green" id="zip" href="#">⬇ Download all (.zip)</a><button class="ghost" id="again">New video</button></div>
+    </div>
+    <div class="lbl">Highlight radar: how exciting each moment is</div>
+    <canvas id="curve"></canvas>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="card phone" id="phone" hidden>
+    <div class="qr" id="qr"></div>
+    <div><div class="lbl" style="margin-top:0">Open on your phone</div><div style="font-weight:700">Scan, or type <code id="lan"></code> on any device on the same Wi-Fi.</div></div>
+  </section>
+
+  <footer>ClipRadar is open source (MIT). Only clip videos you own or have permission to use. <a href="https://github.com/chirai-ultra/clipradar" id="gh">GitHub</a></footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const STAGES = [["fetch","Get"],["audio","Listen"],["visual","Watch"],["speech","Transcribe"],["keywords","Trends"],["score","Rank"],["render","Render HD"],["done","Done"]];
+const COLORS = ["#E0301E","#F7D51B","#3B6E2C","#3E6DB0"];
+let N = +(localStorage.getItem("cr_n") || 5), poll = null, layout = "vertical";
+
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),2400)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fmt(t){t=Math.round(t);return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")}
+
+// count picker 1..10
+for(let i=1;i<=10;i++){const b=document.createElement("button");b.type="button";b.textContent=i;b.onclick=()=>setN(i);$("#count").append(b)}
+function setN(n){N=n;try{localStorage.setItem("cr_n",n)}catch(e){};$("#nlbl").textContent=n;[...$("#count").children].forEach((b,i)=>b.classList.toggle("on",i<n))}
+setN(N);
+$("#stages").innerHTML=STAGES.map(([k,l])=>`<span data-k="${k}">${l}</span>`).join("");
+
+function opts(){return{clips:N,content:$("#content").value,layout:$("#layout").value,framing:$("#framing").value,
+  captions:$("#cap").checked,hook_title:$("#hook").checked,quality:$("#best").checked?"best":"fast",
+  keywords:$("#kw").value.split(",").map(s=>s.trim()).filter(Boolean)}}
+
+function busy(on){$("#go").disabled=on;$("#prog").style.display=on||$("#err").style.display==="block"?"block":"none"}
+
+async function start(promise){
+  $("#err").style.display="none";$("#res").style.display="none";busy(true);layout=$("#layout").value;
+  try{const r=await promise;const j=await r.json();if(!r.ok)throw new Error(j.detail||"Request failed");watch(j.id)}
+  catch(e){fail(e.message)}
+}
+$("#f").onsubmit=e=>{e.preventDefault();const o=opts();o.source=$("#src").value.trim();
+  start(fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}))};
+$("#file").onchange=()=>{const f=$("#file").files[0];if(!f)return;$("#fname").textContent=f.name;const o=opts(),fd=new FormData();
+  fd.append("file",f);for(const k of ["clips","content","layout","framing","captions"])fd.append(k,o[k]);fd.append("keywords",o.keywords.join(","));
+  $("#msg").textContent="Uploading…";start(fetch("/api/upload",{method:"POST",body:fd}))};
+
+function fail(m){$("#err").textContent=m;$("#err").style.display="block";$("#prog").style.display="block";$("#go").disabled=false;clearInterval(poll)}
+
+function watch(id){
+  clearInterval(poll);
+  const tick=async()=>{
+    let j;try{j=await (await fetch("/api/jobs/"+id)).json()}catch(e){return}
+    $("#barfill").style.width=Math.max(3,j.progress*100)+"%";$("#msg").textContent=j.message;
+    const idx=STAGES.findIndex(s=>s[0]===j.stage);
+    document.querySelectorAll("#stages span").forEach((s,i)=>{s.className=i<idx||j.status==="done"?"done":i===idx?"now":""});
+    if(j.status==="error"){fail(j.error||"Failed")}
+    if(j.status==="done"){clearInterval(poll);busy(false);show(j.result)}
+  };tick();poll=setInterval(tick,1200);
+}
+
+function drawCurve(r){
+  const c=$("#curve"),dpr=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*dpr;c.height=h*dpr;
+  const g=c.getContext("2d");g.scale(dpr,dpr);const v=r.curve||[],D=r.duration||1;if(!v.length)return;
+  const mx=Math.max(...v)||1;
+  r.clips.forEach((cl,i)=>{g.fillStyle=COLORS[i%4]+"bb";g.fillRect(cl.start/D*w,0,(cl.end-cl.start)/D*w,h);
+    g.fillStyle="#151E11";g.font="900 13px system-ui";g.fillText("#"+cl.rank,cl.start/D*w+4,15)});
+  g.beginPath();v.forEach((y,i)=>{const x=i/(v.length-1)*w,yy=h-6-(y/mx)*(h-20);i?g.lineTo(x,yy):g.moveTo(x,yy)});
+  g.lineWidth=3;g.strokeStyle="#151E11";g.lineJoin="round";g.stroke();
+}
+
+function show(r){
+  $("#res").style.display="block";$("#rtitle").textContent=r.title||"Your clips";
+  $("#rmeta").textContent=`${r.clips.length} clips · ${r.content} · ${r.layout} · ${fmt(r.duration)} source`+(r.used_heatmap?" · used viewers' Most Replayed data":"")+` · ${r.seconds}s`;
+  $("#zip").href=r.zip;
+  const cls=r.layout==="1920x1080"?"land":r.layout==="1080x1080"?"sq":"";
+  $("#grid").innerHTML=r.clips.map((c,i)=>`
+  <article class="clip ${cls}">
+    <div class="top"><span>#${c.rank} · ${fmt(c.start)}–${fmt(c.end)}</span><span>${Math.round(c.score)}</span></div>
+    <video src="${c.url}" poster="${c.thumb_url}" controls playsinline preload="none"></video>
+    <div class="body">
+      ${c.title?`<div class="t">${esc(c.title)}</div>`:""}
+      <div class="chips">${esc(c.why).split(", ").filter(Boolean).map(w=>`<span>${w}</span>`).join("")}<span>${c.duration.toFixed(0)}s</span></div>
+      <div class="acts"><a class="btn" href="${c.url}?dl=1" download>⬇ Save</a><button class="blue" data-i="${i}">↗ Share</button></div>
+    </div>
+  </article>`).join("");
+  $("#grid").querySelectorAll("button[data-i]").forEach(b=>b.onclick=()=>share(r.clips[+b.dataset.i],r.title));
+  drawCurve(r);window.onresize=()=>drawCurve(r);
+  $("#res").scrollIntoView({behavior:"smooth"});
+}
+
+async function share(c,title){
+  const abs=new URL(c.url,location.href).href;
+  try{
+    if(navigator.canShare){const blob=await (await fetch(c.url)).blob();const f=new File([blob],c.file,{type:"video/mp4"});
+      if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:c.title||title||"Clip"});return}}
+    if(navigator.share){await navigator.share({url:abs,title:c.title||title});return}
+    await navigator.clipboard.writeText(abs);toast("Link copied")
+  }catch(e){if(e.name!=="AbortError")toast("Sharing isn't available here: use Save")}
+}
+
+$("#again").onclick=()=>{$("#res").style.display="none";$("#prog").style.display="none";$("#src").value="";$("#src").focus();scrollTo({top:0,behavior:"smooth"})};
+
+fetch("/api/info").then(r=>r.json()).then(i=>{
+  const local=/^(localhost|127\.)/.test(location.hostname);
+  if(local&&i.lan_url&&!i.lan_url.includes("127.0.0.1")){$("#lan").textContent=i.lan_url;if(i.qr_svg)$("#qr").innerHTML=i.qr_svg;else $("#qr").remove();$("#phone").hidden=false}
+}).catch(()=>{});
+{const q=new URLSearchParams(location.search),u=q.get("url")||(q.get("text")||"").match(/https?:\/\/\S+/)?.[0];if(u)$("#src").value=u}
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+</script>
+</body>
+</html>

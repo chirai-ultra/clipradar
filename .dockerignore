@@ -1,0 +1,6 @@
+.git
+**/__pycache__
+clipradar_output
+data
+tests
+*.mp4
