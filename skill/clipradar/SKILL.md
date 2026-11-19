@@ -29,6 +29,7 @@ Pick options from what the user asked for:
 | gameplay / podcast / sports | `--content gaming\|talk\|sports` (default auto) |
 | TikTok/Reels/Shorts | `--layout vertical` (default) |
 | YouTube / X landscape | `--layout landscape` |
+| streamer with a facecam | `--framing stream` (auto picks it when a facecam is found) |
 | keep the whole game screen | `--framing fit` |
 | follow the speaker | `--framing smart` |
 | specific moments ("the goal", "when he laughs") | `-k goal -k laugh` |

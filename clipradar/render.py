@@ -142,7 +142,8 @@ def _esc(s: str) -> str:
     return s.replace("\\", "").replace("{", "(").replace("}", ")").replace("\n", " ")
 
 
-def write_ass(path: Path, words, start: float, end: float, W: int, H: int, title: str = "") -> bool:
+def write_ass(path: Path, words, start: float, end: float, W: int, H: int, title: str = "",
+              hook_y: int | None = None) -> bool:
     ws = [w for w in words if w.end > start and w.start < end]
     if not ws and not title:
         return False
@@ -157,7 +158,7 @@ def write_ass(path: Path, words, start: float, end: float, W: int, H: int, title
         f"Style: Cap,{FONT_NAME},{fs},&H00FFFFFF,&H001BD5F7,&H00111E15,&H64000000,-1,0,0,0,100,100,1,0,1,"
         f"{max(4, fs // 11)},2,2,60,60,{margin_v},1",
         f"Style: Hook,{FONT_NAME},{int(fs * 0.8)},&H00FFFFFF,&H00FFFFFF,&H001E30E0,&H001E30E0,-1,0,0,0,100,100,0,0,3,"
-        f"{int(fs * 0.25)},0,8,80,80,{int(H * 0.09)},1",
+        f"{int(fs * 0.25)},0,8,80,80,{hook_y if hook_y is not None else int(H * 0.09)},1",
         "", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
     if title:
@@ -194,9 +195,14 @@ def _ff_path(p: Path) -> str:
 
 def render(src, out: Path, start: float, end: float, *, W: int, H: int, src_w: int, src_h: int,
            framing: str, track, ass: Path | None, fps: float, has_audio: bool, quality: str = "fast",
-           pre_crop: tuple[int, int, int, int] | None = None) -> Path:
-    """src_w/src_h are the picture size after pre_crop (black bars removed) when one is given."""
-    vf = video_filter(framing, W, H, src_w, src_h, track)
+           pre_crop: tuple[int, int, int, int] | None = None, stream: tuple | None = None) -> Path:
+    """src_w/src_h are the picture size after pre_crop (black bars removed) when one is given.
+    stream = (cam_crop, game_crop, top_h) from facecam.layout() for the split streamer layout."""
+    if stream:
+        from .facecam import video_filter as stream_filter
+        vf = stream_filter(*stream, W, H)
+    else:
+        vf = video_filter(framing, W, H, src_w, src_h, track)
     if pre_crop:
         cw, ch, cx, cy = pre_crop
         vf = f"crop={cw}:{ch}:{cx}:{cy}," + vf

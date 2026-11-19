@@ -137,7 +137,7 @@ footer a{color:var(--ink)}
       <label>Format
         <select id="layout"><option value="vertical">Vertical 9:16 (Reels, Shorts, TikTok)</option><option value="square">Square 1:1</option><option value="landscape">Landscape 16:9</option><option value="auto">Keep original shape</option></select></label>
       <label>Framing
-        <select id="framing"><option value="auto">Auto</option><option value="smart">Follow faces / action</option><option value="fit">Fit + blurred background</option><option value="center">Centre crop</option></select></label>
+        <select id="framing"><option value="auto">Auto</option><option value="stream">Stream: facecam on top + gameplay</option><option value="smart">Follow faces / action</option><option value="fit">Fit + blurred background</option><option value="center">Centre crop</option></select></label>
       <label>Keywords to favour
         <input type="text" id="kw" placeholder="e.g. clutch, goal, funny"></label>
     </div>
@@ -233,7 +233,7 @@ function drawCurve(r){
 
 function show(r){
   $("#res").style.display="block";$("#rtitle").textContent=r.title||"Your clips";
-  $("#rmeta").textContent=`${r.clips.length} clips · ${r.content} · ${r.layout} · ${fmt(r.duration)} source`+(r.used_heatmap?" · used viewers' Most Replayed data":"")+` · ${r.seconds}s`;
+  $("#rmeta").textContent=`${r.clips.length} clips · ${r.content} · ${r.layout} · ${fmt(r.duration)} source`+(r.facecam?" · facecam layout":"")+(r.used_heatmap?" · used viewers' Most Replayed data":"")+` · ${r.seconds}s`;
   $("#zip").href=r.zip;
   const cls=r.layout==="1920x1080"?"land":r.layout==="1080x1080"?"sq":"";
   $("#grid").innerHTML=r.clips.map((c,i)=>`

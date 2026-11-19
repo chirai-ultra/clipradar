@@ -35,6 +35,7 @@ of the clip, where the hook belongs.
 Then every clip is rendered properly:
 - **HD**: 1080x1920 (or 1:1 / 16:9), Lanczos scaling + light sharpening, H.264 high profile, faststart
 - **Clean frame**: baked-in black bars are detected and removed first
+- **Streamer layout**: finds the facecam (a small, steady face in a corner, its box measured from its static border), enlarges it on top and puts the gameplay below, automatically
 - **Smart framing**: follows faces (OpenCV YuNet) or the action; *fit* mode keeps the whole game HUD over a blurred fill
 - **Captions**: word-by-word highlight, plus a 3-second hook title; `.srt` exported too
 - **Loudness**: normalised to -14 LUFS, the level TikTok, Reels and Shorts expect
@@ -47,6 +48,7 @@ Then every clip is rendered properly:
 clipradar <url-or-file> -n 5                       # 5 clips, everything auto
 clipradar match.mp4 -n 10 --content sports         # up to 10
 clipradar <url> --content gaming --framing fit     # keep the full game screen
+clipradar <twitch-vod> --framing stream            # facecam on top, gameplay below
 clipradar <url> -k clutch -k "no way"              # favour moments with these words
 clipradar <url> --layout landscape --min-len 30 --max-len 60
 clipradar <url> --asr none                         # skip speech, still works
@@ -89,7 +91,7 @@ Copy [`skill/clipradar`](skill/clipradar) into your agent's skills folder. The a
 | `-n, --clips` | 5 | 1 to 10 |
 | `--content` | auto | `gaming`, `talk`, `sports` |
 | `--layout` | vertical | `square`, `landscape`, `auto` (keep shape) |
-| `--framing` | auto | `smart` (faces/action), `fit` (blurred background), `center` |
+| `--framing` | auto | `stream` (facecam on top + gameplay), `smart` (faces/action), `fit` (blurred background), `center` |
 | `--min-len / --max-len` | preset | gaming 15-45 s, talk 25-60 s, sports 12-40 s |
 | `-k, --keyword` | | repeatable |
 | `--asr` | auto | `faster-whisper`, `sherpa` (fast English on CPU), `none` |

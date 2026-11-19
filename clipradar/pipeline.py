@@ -11,7 +11,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import ingest, keywords, llm, render, score, transcribe
+from . import facecam, ingest, keywords, llm, render, score, transcribe
 from .config import Options, llm_settings, work_dir
 from .signals import audio, visual
 
@@ -149,8 +149,23 @@ def run(opts: Options, progress: Progress | None = None, log=print) -> dict:
         log(f"Removing black bars: picture is {pw}x{ph} inside {media.width}x{media.height}.")
     W, H = render.out_size(o.layout, pw, ph)
     framing = o.framing
+    src_r, tgt_r = pw / max(1, ph), W / H
+    stream_geo = None
+    if framing in ("auto", "stream") and src_r > 1.2 and tgt_r < 1:
+        say("render", 0.67, "Looking for a streamer facecam…")
+        off = (media.crop[2], media.crop[3]) if media.crop else (0, 0)
+        cam = facecam.detect(media.path, media.duration, pw, ph, offset=off,
+                             require_corner=(framing == "auto"))
+        if cam:
+            stream_geo = facecam.layout(cam, pw, ph, W, H)
+            framing = "stream"
+            log(f"Facecam found at {cam.x},{cam.y} ({cam.w}x{cam.h}px face): using the split stream layout.")
+        elif framing == "stream":
+            log("No facecam found: using the full frame over a blurred background instead.")
+            framing = "fit"
+    elif framing == "stream":
+        framing = "fit"   # the split layout only makes sense for landscape video into a tall frame
     if framing == "auto":
-        src_r, tgt_r = pw / max(1, ph), W / H
         framing = "smart" if (content == "talk" or abs(src_r - tgt_r) < 0.35) else "fit"
     results = []
     for i, c in enumerate(clips, 1):
@@ -168,13 +183,15 @@ def run(opts: Options, progress: Progress | None = None, log=print) -> dict:
         ass = None
         if o.captions or (o.hook_title and c.title):
             ass_p = job / f"{name}.ass"
+            hook_y = stream_geo[2] + 40 if stream_geo else None   # below the facecam panel
             if render.write_ass(ass_p, words if o.captions else [], c.start, c.end, W, H,
-                                c.title if o.hook_title else ""):
+                                c.title if o.hook_title else "", hook_y=hook_y):
                 ass = ass_p
         mp4 = job / f"{name}.mp4"
         render.render(media.path, mp4, c.start, c.end, W=W, H=H, src_w=pw, src_h=ph,
                       framing=framing, track=track, ass=ass, fps=o.fps or media.fps,
-                      has_audio=media.has_audio, quality=o.quality, pre_crop=media.crop)
+                      has_audio=media.has_audio, quality=o.quality, pre_crop=media.crop,
+                      stream=stream_geo)
         render.thumbnail(mp4, job / f"{name}.jpg", min(c.duration * 0.33, 3))
         if words:
             _srt(words, c.start, c.end, job / f"{name}.srt")
@@ -186,7 +203,7 @@ def run(opts: Options, progress: Progress | None = None, log=print) -> dict:
 
     manifest = {
         "source": o.source, "title": media.title, "duration": media.duration, "content": content,
-        "layout": f"{W}x{H}", "framing": framing, "removed_bars": bool(media.crop), "used_heatmap": bool(media.heatmap),
+        "layout": f"{W}x{H}", "framing": framing, "facecam": bool(stream_geo), "removed_bars": bool(media.crop), "used_heatmap": bool(media.heatmap),
         "trends": trend_list, "signal_weights": used, "options": asdict(o),
         "clips": results, "seconds": round(time.time() - t0, 1),
         "curve": [round(float(v), 3) for v in curve[:: max(1, n_sec // 400)]],

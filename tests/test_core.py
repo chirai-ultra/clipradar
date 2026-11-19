@@ -79,3 +79,27 @@ def test_out_size():
     assert render.out_size("vertical", 1920, 1080) == (1080, 1920)
     assert render.out_size("auto", 1080, 1920) == (1080, 1920)
     assert render.out_size("auto", 1920, 1080) == (1920, 1080)
+
+
+def test_facecam_rules():
+    from clipradar import facecam
+    W, H = 1920, 1080
+    corner = [(180 + i % 3, 840, 140, 180) for i in range(20)]
+    assert facecam.choose(corner, 24, W, H) is not None                   # small, steady, in a corner
+    centre = [(900, 400, 140, 180)] * 20
+    assert facecam.choose(centre, 24, W, H) is None                       # person in the middle of a room
+    assert facecam.choose(centre, 24, W, H, require_corner=False) is not None  # unless asked for explicitly
+    big = [(700, 200, 500, 600)] * 20
+    assert facecam.choose(big, 24, W, H) is None                          # full-screen talking head
+    assert facecam.choose(corner[:5], 24, W, H) is None                   # face only now and then
+
+
+def test_stream_layout_keeps_facecam_out_of_gameplay():
+    from clipradar import facecam
+    cam, game, top = facecam.layout(facecam.Box(180, 840, 140, 180), 1920, 1080, 1080, 1920)
+    assert top == 672
+    assert cam[0] / cam[1] == pytest.approx(1080 / 672, rel=0.02)
+    assert game[2] >= cam[2] + cam[0]                                     # gameplay starts right of the cam
+    assert game[0] / game[1] == pytest.approx(1080 / (1920 - 672), rel=0.02)
+    for (w, h, x, y) in (cam, game):
+        assert x >= 0 and y >= 0 and x + w <= 1920 and y + h <= 1080

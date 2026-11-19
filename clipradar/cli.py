@@ -26,7 +26,7 @@ def clip(
     clips: int = typer.Option(5, "-n", "--clips", min=1, max=MAX_CLIPS, help="How many clips (1-10)"),
     content: str = typer.Option("auto", help="auto | gaming | talk | sports"),
     layout: str = typer.Option("vertical", help="vertical 1080x1920 | landscape | square | auto"),
-    framing: str = typer.Option("auto", help="auto | smart (follow faces/action) | fit (blurred background) | center"),
+    framing: str = typer.Option("auto", help="auto | stream (facecam on top, gameplay below) | smart (follow faces/action) | fit (blurred background) | center"),
     min_len: float = typer.Option(0, help="Minimum clip seconds (0 = preset)"),
     max_len: float = typer.Option(0, help="Maximum clip seconds (0 = preset)"),
     keyword: Optional[List[str]] = typer.Option(None, "-k", "--keyword", help="Favour moments mentioning this (repeatable)"),

@@ -7,7 +7,7 @@ from pathlib import Path
 
 MAX_CLIPS = 10
 LAYOUTS = ("auto", "vertical", "landscape", "square")
-FRAMINGS = ("auto", "smart", "fit", "center")
+FRAMINGS = ("auto", "stream", "smart", "fit", "center")
 CONTENT_TYPES = ("auto", "gaming", "talk", "sports")
 
 
@@ -19,7 +19,7 @@ class Options:
     max_len: float = 0.0
     content: str = "auto"                  # auto | gaming | talk | sports
     layout: str = "vertical"               # vertical 1080x1920 | landscape 1920x1080 | square 1080x1080 | auto
-    framing: str = "auto"                  # smart (track faces/motion) | fit (blurred background) | center | auto
+    framing: str = "auto"                  # stream (facecam top + gameplay) | smart (follow faces/motion) | fit (blurred background) | center | auto
     captions: bool = True                  # burn word-by-word captions when speech exists
     hook_title: bool = True                # big title for the first 3 seconds when one is available
     quality: str = "fast"                  # fast (veryfast x264) | best (slow x264, smaller + sharper)
